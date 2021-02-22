@@ -1,0 +1,35 @@
+\hypertarget{structsession__proc__node}{}\section{session\+\_\+proc\+\_\+node Struct Reference}
+\label{structsession__proc__node}\index{session\+\_\+proc\+\_\+node@{session\+\_\+proc\+\_\+node}}
+
+
+This is the structure into the rb\+\_\+tree that contains all the processes which are currently using the sessions.  
+
+
+
+
+{\ttfamily \#include $<$session\+\_\+module.\+h$>$}
+
+\subsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{structsession__proc__node_a35af0be900467fedbb610bd6ea65ed78}{key}
+\item 
+atomic\+\_\+t \hyperlink{structsession__proc__node_a4044530856f9298fceb80cb98e0cc890}{session\+\_\+counter}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+This is the structure into the rb\+\_\+tree that contains all the processes which are currently using the sessions. 
+
+\subsection{Field Documentation}
+\index{session\+\_\+proc\+\_\+node@{session\+\_\+proc\+\_\+node}!key@{key}}
+\index{key@{key}!session\+\_\+proc\+\_\+node@{session\+\_\+proc\+\_\+node}}
+\subsubsection[{\texorpdfstring{key}{key}}]{\setlength{\rightskip}{0pt plus 5cm}int key}\hypertarget{structsession__proc__node_a35af0be900467fedbb610bd6ea65ed78}{}\label{structsession__proc__node_a35af0be900467fedbb610bd6ea65ed78}
+the key on which the search method will find the needed node, its the pid \index{session\+\_\+proc\+\_\+node@{session\+\_\+proc\+\_\+node}!session\+\_\+counter@{session\+\_\+counter}}
+\index{session\+\_\+counter@{session\+\_\+counter}!session\+\_\+proc\+\_\+node@{session\+\_\+proc\+\_\+node}}
+\subsubsection[{\texorpdfstring{session\+\_\+counter}{session_counter}}]{\setlength{\rightskip}{0pt plus 5cm}atomic\+\_\+t session\+\_\+counter}\hypertarget{structsession__proc__node_a4044530856f9298fceb80cb98e0cc890}{}\label{structsession__proc__node_a4044530856f9298fceb80cb98e0cc890}
+the field that stores an atomi value indicating how many sessions are opened by the process 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/home/osboxes/\+Documenti/\+A\+O\+S\+V/aosv1819-\/federicoalfano/\hyperlink{session__module_8h}{session\+\_\+module.\+h}\end{DoxyCompactItemize}

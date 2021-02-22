@@ -1,0 +1,40 @@
+\hypertarget{structsession__file__node}{}\section{session\+\_\+file\+\_\+node Struct Reference}
+\label{structsession__file__node}\index{session\+\_\+file\+\_\+node@{session\+\_\+file\+\_\+node}}
+
+
+This is the structure into the rb\+\_\+tree that contains all the open files with their counter.  
+
+
+
+
+{\ttfamily \#include $<$session\+\_\+module.\+h$>$}
+
+\subsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+char \hyperlink{structsession__file__node_ae4c213ccac480eb9759b4c5fc70ac77f}{key} \mbox{[}\hyperlink{session__module_8h_a4620eb783fd7aaa1d61fe4fdaa750d74}{M\+A\+X\+\_\+\+P\+A\+T\+H\+\_\+\+S\+I\+ZE}\mbox{]}
+\item 
+struct rw\+\_\+semaphore $\ast$ \hyperlink{structsession__file__node_a0eba6b6e0bbe3d55110a724c3c08d1c2}{rw\+\_\+sem}
+\item 
+atomic\+\_\+t \hyperlink{structsession__file__node_a73c22c7a38a683b4a26d2f1f2308b80d}{counter}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+This is the structure into the rb\+\_\+tree that contains all the open files with their counter. 
+
+\subsection{Field Documentation}
+\index{session\+\_\+file\+\_\+node@{session\+\_\+file\+\_\+node}!counter@{counter}}
+\index{counter@{counter}!session\+\_\+file\+\_\+node@{session\+\_\+file\+\_\+node}}
+\subsubsection[{\texorpdfstring{counter}{counter}}]{\setlength{\rightskip}{0pt plus 5cm}atomic\+\_\+t counter}\hypertarget{structsession__file__node_a73c22c7a38a683b4a26d2f1f2308b80d}{}\label{structsession__file__node_a73c22c7a38a683b4a26d2f1f2308b80d}
+the field that stores an atomic value indicating how many times the file is opened with sessions. \index{session\+\_\+file\+\_\+node@{session\+\_\+file\+\_\+node}!key@{key}}
+\index{key@{key}!session\+\_\+file\+\_\+node@{session\+\_\+file\+\_\+node}}
+\subsubsection[{\texorpdfstring{key}{key}}]{\setlength{\rightskip}{0pt plus 5cm}char key\mbox{[}{\bf M\+A\+X\+\_\+\+P\+A\+T\+H\+\_\+\+S\+I\+ZE}\mbox{]}}\hypertarget{structsession__file__node_ae4c213ccac480eb9759b4c5fc70ac77f}{}\label{structsession__file__node_ae4c213ccac480eb9759b4c5fc70ac77f}
+the key on which the search method will find the needed node, it\textquotesingle{}s the absolute path of the file \index{session\+\_\+file\+\_\+node@{session\+\_\+file\+\_\+node}!rw\+\_\+sem@{rw\+\_\+sem}}
+\index{rw\+\_\+sem@{rw\+\_\+sem}!session\+\_\+file\+\_\+node@{session\+\_\+file\+\_\+node}}
+\subsubsection[{\texorpdfstring{rw\+\_\+sem}{rw_sem}}]{\setlength{\rightskip}{0pt plus 5cm}struct rw\+\_\+semaphore$\ast$ rw\+\_\+sem}\hypertarget{structsession__file__node_a0eba6b6e0bbe3d55110a724c3c08d1c2}{}\label{structsession__file__node_a0eba6b6e0bbe3d55110a724c3c08d1c2}
+the semaphore that protects the file during the read and the write into ioctl and flush operations. 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/home/osboxes/\+Documenti/\+A\+O\+S\+V/aosv1819-\/federicoalfano/\hyperlink{session__module_8h}{session\+\_\+module.\+h}\end{DoxyCompactItemize}

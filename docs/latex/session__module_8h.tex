@@ -1,0 +1,205 @@
+\hypertarget{session__module_8h}{}\section{/home/osboxes/\+Documenti/\+A\+O\+S\+V/aosv1819-\/federicoalfano/session\+\_\+module.h File Reference}
+\label{session__module_8h}\index{/home/osboxes/\+Documenti/\+A\+O\+S\+V/aosv1819-\/federicoalfano/session\+\_\+module.\+h@{/home/osboxes/\+Documenti/\+A\+O\+S\+V/aosv1819-\/federicoalfano/session\+\_\+module.\+h}}
+
+
+The header of the main functions that allows the user a session-\/based file access semantic.  
+
+
+{\ttfamily \#include $<$linux/module.\+h$>$}\\*
+{\ttfamily \#include $<$linux/fs.\+h$>$}\\*
+{\ttfamily \#include $<$linux/fs\+\_\+struct.\+h$>$}\\*
+{\ttfamily \#include $<$linux/fdtable.\+h$>$}\\*
+{\ttfamily \#include $<$linux/cdev.\+h$>$}\\*
+{\ttfamily \#include $<$linux/slab.\+h$>$}\\*
+{\ttfamily \#include $<$linux/err.\+h$>$}\\*
+{\ttfamily \#include $<$linux/uaccess.\+h$>$}\\*
+{\ttfamily \#include $<$linux/kobject.\+h$>$}\\*
+{\ttfamily \#include $<$linux/sysfs.\+h$>$}\\*
+{\ttfamily \#include $<$linux/rbtree.\+h$>$}\\*
+{\ttfamily \#include $<$linux/list.\+h$>$}\\*
+{\ttfamily \#include $<$linux/mutex.\+h$>$}\\*
+{\ttfamily \#include $<$linux/dcache.\+h$>$}\\*
+{\ttfamily \#include $<$linux/sched/signal.\+h$>$}\\*
+{\ttfamily \#include $<$linux/file.\+h$>$}\\*
+{\ttfamily \#include $<$linux/namei.\+h$>$}\\*
+{\ttfamily \#include $<$linux/mount.\+h$>$}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structsession__cdev}{session\+\_\+cdev}
+\begin{DoxyCompactList}\small\item\em The wrapper containing the char device used to manage sessions plus the kobject needed into the /sys to get info about the open sessions. \end{DoxyCompactList}\item 
+struct \hyperlink{structsession__file__node}{session\+\_\+file\+\_\+node}
+\begin{DoxyCompactList}\small\item\em This is the structure into the rb\+\_\+tree that contains all the open files with their counter. \end{DoxyCompactList}\item 
+struct \hyperlink{structsession__proc__node}{session\+\_\+proc\+\_\+node}
+\begin{DoxyCompactList}\small\item\em This is the structure into the rb\+\_\+tree that contains all the processes which are currently using the sessions. \end{DoxyCompactList}\item 
+struct \hyperlink{structsession__priv__data}{session\+\_\+priv\+\_\+data}
+\begin{DoxyCompactList}\small\item\em This structure is linked to the original file through the field {\bfseries private\+\_\+data} and the main purpose is to keep the pointer to the session file. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \hyperlink{session__module_8h_a5c4204750644d6c24cef42ba32859090}{S\+E\+S\+S\+I\+O\+N\+\_\+\+M\+A\+J\+O\+R\+\_\+\+N\+U\+M\+B\+ER}~0
+\item 
+\#define \hyperlink{session__module_8h_a6691a3a94e3f433cc72daae4abf10c30}{S\+E\+S\+S\+I\+O\+N\+\_\+\+B\+A\+S\+E\+\_\+\+M\+I\+N\+OR}~0
+\item 
+\#define \hyperlink{session__module_8h_a1da41d527b391b557b30acdc9e2cf425}{M\+A\+X\+\_\+\+F\+I\+L\+E\+N\+A\+M\+E\+\_\+\+S\+I\+ZE}~128
+\item 
+\#define \hyperlink{session__module_8h_a4620eb783fd7aaa1d61fe4fdaa750d74}{M\+A\+X\+\_\+\+P\+A\+T\+H\+\_\+\+S\+I\+ZE}~256
+\item 
+\#define \hyperlink{session__module_8h_aea5f68ff70061925b3d862142f556131}{M\+A\+X\+\_\+\+F\+I\+L\+E\+\_\+\+N\+UM}~256
+\item 
+\#define \hyperlink{session__module_8h_aa3ca6fb903698afbe0fd515c8c3c08ab}{N\+\_\+\+S\+E\+S\+S\+\_\+\+D\+I\+G\+I\+TS}~8
+\item 
+\#define \hyperlink{session__module_8h_ac34193a6c1654e1bf42636cd41cb9261}{N\+\_\+\+P\+R\+O\+C\+\_\+\+D\+I\+G\+I\+TS}~6
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{session__module_8h_af70e17f30f76ad2071b48cec18a9bfe5}{session\+\_\+release} (struct inode $\ast$, struct file $\ast$)
+\begin{DoxyCompactList}\small\item\em Closes the session related to filp, unlinking the temporary session node, it\textquotesingle{}s called just after an unexpected close. The right way to close a session is with the S\+E\+S\+S\+I\+O\+N\+\_\+\+C\+L\+O\+SE from ioctl that replaces the file operations from the original file. \end{DoxyCompactList}\item 
+ssize\+\_\+t \hyperlink{session__module_8h_a0970ca7c9dd4902a0abfd6f9942acaf9}{session\+\_\+read} (struct file $\ast$, char \+\_\+\+\_\+user $\ast$, size\+\_\+t, loff\+\_\+t $\ast$)
+\begin{DoxyCompactList}\small\item\em It reads is onto the session file, every concurrent change onto the original file between the session open and the session release are invisible to the read. \end{DoxyCompactList}\item 
+loff\+\_\+t \hyperlink{session__module_8h_af1cf440d58b8b5e882face94b18f1bf9}{session\+\_\+llseek} (struct file $\ast$, loff\+\_\+t, int)
+\begin{DoxyCompactList}\small\item\em It seeks the position into the session file. \end{DoxyCompactList}\item 
+ssize\+\_\+t \hyperlink{session__module_8h_a7460b0b84ab43c630b893d275e294c56}{session\+\_\+write} (struct file $\ast$, const char \+\_\+\+\_\+user $\ast$, size\+\_\+t, loff\+\_\+t $\ast$)
+\begin{DoxyCompactList}\small\item\em It writes only onto session file keeping immutate the original one. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The header of the main functions that allows the user a session-\/based file access semantic. 
+
+\begin{DoxyAuthor}{Author}
+Federico Alfano 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2 May, 2020 
+\end{DoxyDate}
+
+
+\subsection{Macro Definition Documentation}
+\index{session\+\_\+module.\+h@{session\+\_\+module.\+h}!M\+A\+X\+\_\+\+F\+I\+L\+E\+\_\+\+N\+UM@{M\+A\+X\+\_\+\+F\+I\+L\+E\+\_\+\+N\+UM}}
+\index{M\+A\+X\+\_\+\+F\+I\+L\+E\+\_\+\+N\+UM@{M\+A\+X\+\_\+\+F\+I\+L\+E\+\_\+\+N\+UM}!session\+\_\+module.\+h@{session\+\_\+module.\+h}}
+\subsubsection[{\texorpdfstring{M\+A\+X\+\_\+\+F\+I\+L\+E\+\_\+\+N\+UM}{MAX_FILE_NUM}}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+A\+X\+\_\+\+F\+I\+L\+E\+\_\+\+N\+UM~256}\hypertarget{session__module_8h_aea5f68ff70061925b3d862142f556131}{}\label{session__module_8h_aea5f68ff70061925b3d862142f556131}
+It indicates how many files can be represented, this macro is useful to indicate to the file\+\_\+counter how many lines can show \index{session\+\_\+module.\+h@{session\+\_\+module.\+h}!M\+A\+X\+\_\+\+F\+I\+L\+E\+N\+A\+M\+E\+\_\+\+S\+I\+ZE@{M\+A\+X\+\_\+\+F\+I\+L\+E\+N\+A\+M\+E\+\_\+\+S\+I\+ZE}}
+\index{M\+A\+X\+\_\+\+F\+I\+L\+E\+N\+A\+M\+E\+\_\+\+S\+I\+ZE@{M\+A\+X\+\_\+\+F\+I\+L\+E\+N\+A\+M\+E\+\_\+\+S\+I\+ZE}!session\+\_\+module.\+h@{session\+\_\+module.\+h}}
+\subsubsection[{\texorpdfstring{M\+A\+X\+\_\+\+F\+I\+L\+E\+N\+A\+M\+E\+\_\+\+S\+I\+ZE}{MAX_FILENAME_SIZE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+A\+X\+\_\+\+F\+I\+L\+E\+N\+A\+M\+E\+\_\+\+S\+I\+ZE~128}\hypertarget{session__module_8h_a1da41d527b391b557b30acdc9e2cf425}{}\label{session__module_8h_a1da41d527b391b557b30acdc9e2cf425}
+The maximum filename length, you can compile it with different values if you know the maximum length of your files \index{session\+\_\+module.\+h@{session\+\_\+module.\+h}!M\+A\+X\+\_\+\+P\+A\+T\+H\+\_\+\+S\+I\+ZE@{M\+A\+X\+\_\+\+P\+A\+T\+H\+\_\+\+S\+I\+ZE}}
+\index{M\+A\+X\+\_\+\+P\+A\+T\+H\+\_\+\+S\+I\+ZE@{M\+A\+X\+\_\+\+P\+A\+T\+H\+\_\+\+S\+I\+ZE}!session\+\_\+module.\+h@{session\+\_\+module.\+h}}
+\subsubsection[{\texorpdfstring{M\+A\+X\+\_\+\+P\+A\+T\+H\+\_\+\+S\+I\+ZE}{MAX_PATH_SIZE}}]{\setlength{\rightskip}{0pt plus 5cm}\#define M\+A\+X\+\_\+\+P\+A\+T\+H\+\_\+\+S\+I\+ZE~256}\hypertarget{session__module_8h_a4620eb783fd7aaa1d61fe4fdaa750d74}{}\label{session__module_8h_a4620eb783fd7aaa1d61fe4fdaa750d74}
+The maximum length of the path \index{session\+\_\+module.\+h@{session\+\_\+module.\+h}!N\+\_\+\+P\+R\+O\+C\+\_\+\+D\+I\+G\+I\+TS@{N\+\_\+\+P\+R\+O\+C\+\_\+\+D\+I\+G\+I\+TS}}
+\index{N\+\_\+\+P\+R\+O\+C\+\_\+\+D\+I\+G\+I\+TS@{N\+\_\+\+P\+R\+O\+C\+\_\+\+D\+I\+G\+I\+TS}!session\+\_\+module.\+h@{session\+\_\+module.\+h}}
+\subsubsection[{\texorpdfstring{N\+\_\+\+P\+R\+O\+C\+\_\+\+D\+I\+G\+I\+TS}{N_PROC_DIGITS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define N\+\_\+\+P\+R\+O\+C\+\_\+\+D\+I\+G\+I\+TS~6}\hypertarget{session__module_8h_ac34193a6c1654e1bf42636cd41cb9261}{}\label{session__module_8h_ac34193a6c1654e1bf42636cd41cb9261}
+Indicates of how many digits the proc\+\_\+counter can have, in other words are maximum number of digits needed to represent the number of per-\/process sessions \index{session\+\_\+module.\+h@{session\+\_\+module.\+h}!N\+\_\+\+S\+E\+S\+S\+\_\+\+D\+I\+G\+I\+TS@{N\+\_\+\+S\+E\+S\+S\+\_\+\+D\+I\+G\+I\+TS}}
+\index{N\+\_\+\+S\+E\+S\+S\+\_\+\+D\+I\+G\+I\+TS@{N\+\_\+\+S\+E\+S\+S\+\_\+\+D\+I\+G\+I\+TS}!session\+\_\+module.\+h@{session\+\_\+module.\+h}}
+\subsubsection[{\texorpdfstring{N\+\_\+\+S\+E\+S\+S\+\_\+\+D\+I\+G\+I\+TS}{N_SESS_DIGITS}}]{\setlength{\rightskip}{0pt plus 5cm}\#define N\+\_\+\+S\+E\+S\+S\+\_\+\+D\+I\+G\+I\+TS~8}\hypertarget{session__module_8h_aa3ca6fb903698afbe0fd515c8c3c08ab}{}\label{session__module_8h_aa3ca6fb903698afbe0fd515c8c3c08ab}
+Indicates of how many digits the session\+\_\+counter can have, (e.\+g. setting at 3, the subsystem cannot show more than 999 session) \index{session\+\_\+module.\+h@{session\+\_\+module.\+h}!S\+E\+S\+S\+I\+O\+N\+\_\+\+B\+A\+S\+E\+\_\+\+M\+I\+N\+OR@{S\+E\+S\+S\+I\+O\+N\+\_\+\+B\+A\+S\+E\+\_\+\+M\+I\+N\+OR}}
+\index{S\+E\+S\+S\+I\+O\+N\+\_\+\+B\+A\+S\+E\+\_\+\+M\+I\+N\+OR@{S\+E\+S\+S\+I\+O\+N\+\_\+\+B\+A\+S\+E\+\_\+\+M\+I\+N\+OR}!session\+\_\+module.\+h@{session\+\_\+module.\+h}}
+\subsubsection[{\texorpdfstring{S\+E\+S\+S\+I\+O\+N\+\_\+\+B\+A\+S\+E\+\_\+\+M\+I\+N\+OR}{SESSION_BASE_MINOR}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+E\+S\+S\+I\+O\+N\+\_\+\+B\+A\+S\+E\+\_\+\+M\+I\+N\+OR~0}\hypertarget{session__module_8h_a6691a3a94e3f433cc72daae4abf10c30}{}\label{session__module_8h_a6691a3a94e3f433cc72daae4abf10c30}
+This is the base minor, it\textquotesingle{}s not critical as the driver is designed to work with just one instance \index{session\+\_\+module.\+h@{session\+\_\+module.\+h}!S\+E\+S\+S\+I\+O\+N\+\_\+\+M\+A\+J\+O\+R\+\_\+\+N\+U\+M\+B\+ER@{S\+E\+S\+S\+I\+O\+N\+\_\+\+M\+A\+J\+O\+R\+\_\+\+N\+U\+M\+B\+ER}}
+\index{S\+E\+S\+S\+I\+O\+N\+\_\+\+M\+A\+J\+O\+R\+\_\+\+N\+U\+M\+B\+ER@{S\+E\+S\+S\+I\+O\+N\+\_\+\+M\+A\+J\+O\+R\+\_\+\+N\+U\+M\+B\+ER}!session\+\_\+module.\+h@{session\+\_\+module.\+h}}
+\subsubsection[{\texorpdfstring{S\+E\+S\+S\+I\+O\+N\+\_\+\+M\+A\+J\+O\+R\+\_\+\+N\+U\+M\+B\+ER}{SESSION_MAJOR_NUMBER}}]{\setlength{\rightskip}{0pt plus 5cm}\#define S\+E\+S\+S\+I\+O\+N\+\_\+\+M\+A\+J\+O\+R\+\_\+\+N\+U\+M\+B\+ER~0}\hypertarget{session__module_8h_a5c4204750644d6c24cef42ba32859090}{}\label{session__module_8h_a5c4204750644d6c24cef42ba32859090}
+The Major number of the driver if 0 it\textquotesingle{}s chosen dynamically by the system, please change only if you know what you are doing 
+
+\subsection{Function Documentation}
+\index{session\+\_\+module.\+h@{session\+\_\+module.\+h}!session\+\_\+llseek@{session\+\_\+llseek}}
+\index{session\+\_\+llseek@{session\+\_\+llseek}!session\+\_\+module.\+h@{session\+\_\+module.\+h}}
+\subsubsection[{\texorpdfstring{session\+\_\+llseek(struct file $\ast$, loff\+\_\+t, int)}{session_llseek(struct file *, loff_t, int)}}]{\setlength{\rightskip}{0pt plus 5cm}loff\+\_\+t session\+\_\+llseek (
+\begin{DoxyParamCaption}
+\item[{struct file $\ast$}]{, }
+\item[{loff\+\_\+t}]{, }
+\item[{int}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{session__module_8h_af1cf440d58b8b5e882face94b18f1bf9}{}\label{session__module_8h_af1cf440d58b8b5e882face94b18f1bf9}
+
+
+It seeks the position into the session file. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em filp} & the file structure pointer referred by the call \\
+\hline
+{\em off} & the seek offset \\
+\hline
+{\em whence} & the seek method \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+returns the resulting offset location as measured in bytes from the beginning of the file or an error code 
+\end{DoxyReturn}
+\index{session\+\_\+module.\+h@{session\+\_\+module.\+h}!session\+\_\+read@{session\+\_\+read}}
+\index{session\+\_\+read@{session\+\_\+read}!session\+\_\+module.\+h@{session\+\_\+module.\+h}}
+\subsubsection[{\texorpdfstring{session\+\_\+read(struct file $\ast$, char \+\_\+\+\_\+user $\ast$, size\+\_\+t, loff\+\_\+t $\ast$)}{session_read(struct file *, char __user *, size_t, loff_t *)}}]{\setlength{\rightskip}{0pt plus 5cm}ssize\+\_\+t session\+\_\+read (
+\begin{DoxyParamCaption}
+\item[{struct file $\ast$}]{, }
+\item[{char \+\_\+\+\_\+user $\ast$}]{, }
+\item[{size\+\_\+t}]{, }
+\item[{loff\+\_\+t $\ast$}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{session__module_8h_a0970ca7c9dd4902a0abfd6f9942acaf9}{}\label{session__module_8h_a0970ca7c9dd4902a0abfd6f9942acaf9}
+
+
+It reads is onto the session file, every concurrent change onto the original file between the session open and the session release are invisible to the read. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em filp} & the file structure pointer referred by the call \\
+\hline
+{\em buff} & the destination buffer with data to write \\
+\hline
+{\em count} & maximum number of bytes to read \\
+\hline
+{\em offp} & where the read has to start \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+return the number of bytes read or error code 
+\end{DoxyReturn}
+\index{session\+\_\+module.\+h@{session\+\_\+module.\+h}!session\+\_\+release@{session\+\_\+release}}
+\index{session\+\_\+release@{session\+\_\+release}!session\+\_\+module.\+h@{session\+\_\+module.\+h}}
+\subsubsection[{\texorpdfstring{session\+\_\+release(struct inode $\ast$, struct file $\ast$)}{session_release(struct inode *, struct file *)}}]{\setlength{\rightskip}{0pt plus 5cm}int session\+\_\+release (
+\begin{DoxyParamCaption}
+\item[{struct inode $\ast$}]{, }
+\item[{struct file $\ast$}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{session__module_8h_af70e17f30f76ad2071b48cec18a9bfe5}{}\label{session__module_8h_af70e17f30f76ad2071b48cec18a9bfe5}
+
+
+Closes the session related to filp, unlinking the temporary session node, it\textquotesingle{}s called just after an unexpected close. The right way to close a session is with the S\+E\+S\+S\+I\+O\+N\+\_\+\+C\+L\+O\+SE from ioctl that replaces the file operations from the original file. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em inodep} & the inode structure pointer referred by the call \\
+\hline
+{\em filp} & the file structure pointer referred by the call \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 or error code 
+\end{DoxyReturn}
+\index{session\+\_\+module.\+h@{session\+\_\+module.\+h}!session\+\_\+write@{session\+\_\+write}}
+\index{session\+\_\+write@{session\+\_\+write}!session\+\_\+module.\+h@{session\+\_\+module.\+h}}
+\subsubsection[{\texorpdfstring{session\+\_\+write(struct file $\ast$, const char \+\_\+\+\_\+user $\ast$, size\+\_\+t, loff\+\_\+t $\ast$)}{session_write(struct file *, const char __user *, size_t, loff_t *)}}]{\setlength{\rightskip}{0pt plus 5cm}ssize\+\_\+t session\+\_\+write (
+\begin{DoxyParamCaption}
+\item[{struct file $\ast$}]{, }
+\item[{const char \+\_\+\+\_\+user $\ast$}]{, }
+\item[{size\+\_\+t}]{, }
+\item[{loff\+\_\+t $\ast$}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{session__module_8h_a7460b0b84ab43c630b893d275e294c56}{}\label{session__module_8h_a7460b0b84ab43c630b893d275e294c56}
+
+
+It writes only onto session file keeping immutate the original one. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em filp} & the file structure pointer referred by the call \\
+\hline
+{\em buff} & the buffer containing the data to write \\
+\hline
+{\em count} & maximum number of bytes to write \\
+\hline
+{\em offp} & where the write has to start \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+the resulting offset location as measured in bytes from the beginning of the file or an error code 
+\end{DoxyReturn}

@@ -1,0 +1,423 @@
+Some tips on how to use git and Git\+Hub are provided in this document. This is not the only way to use these tools. Neverthless, from my experience, if you adhere to these rules, you are less likely to break everything up.
+
+\subsection*{Branching Model}
+
+A good branching model ensures that the mergeability likelihood is high, and that the patches that you produce can be integrated seamlessy and quickly. The adopted branching model can be summarized as follows\+:
+
+
+
+A good branching model (like the one which is described here) is essentially no more than a set of procedures that every team member has to follow in order to come to a managed software development process.
+
+\subsubsection*{The main branches}
+
+
+
+The repo holds two main branches with an infinite lifetime\+:
+
+
+\begin{DoxyItemize}
+\item {\ttfamily master}
+\item {\ttfamily develop}
+\end{DoxyItemize}
+
+The {\ttfamily master} branch at origin should be familiar to every Git user.\+ \+Parallel to the {\ttfamily master} branch, another branch exists called {\ttfamily develop}.
+
+We consider {\ttfamily origin/master} to be the main branch where the source code of {\ttfamily H\+E\+AD} always reflects a $\ast$production-\/ready$\ast$ state.
+
+We consider {\ttfamily origin/develop} to be the main branch where the source code of {\ttfamily H\+E\+AD} always reflects a state with the latest delivered development changes for the next release. Some would call this the \char`\"{}$\ast$integration branch$\ast$\char`\"{}.
+
+When the source code in the {\ttfamily develop} branch reaches a stable point and is ready to be released, all of the changes should be merged back into {\ttfamily master} somehow and then tagged with a release number. How this is done in detail will be discussed further on.
+
+Therefore, each time when changes are merged back into {\ttfamily master}, this is a new production release {\itshape by definition}. \+This must be enforced strictly\+: if there is some issue which is still known to be in the {\ttfamily origin/develop} for some reason, then {\ttfamily origin/develop} should not be merged into {\ttfamily origin/master}.
+
+{\ttfamily origin/master} is a {\itshape protected branch}\+: no one can directly push into it. This branch is used only by relying on {\itshape pull requests}, and the repository rules enforce that all automatic integration checks must pass in order to merge, and at least two independent code reviews are required for a pull request to be merged. This should reduce the chances that a broken release is delivered.
+
+\subsubsection*{Supporting Branches}
+
+Next to the main branches {\ttfamily master} and {\ttfamily develop}, our development model uses a variety of supporting branches to aid parallel development between team members, ease tracking of features, prepare for production releases and to assist in quickly fixing live production problems. Unlike the main branches, these branches always have a limited life time, since they will be removed eventually.
+
+The different types of branches we may use are\+:
+
+
+\begin{DoxyItemize}
+\item Feature branches
+\item Hotfix branches
+\item Release branches
+\end{DoxyItemize}
+
+Each of these branches have a specific purpose and are bound to strict rules as to which branches may be their originating branch and which branches must be their merge targets. We will walk through them shortly.
+
+By no means are these branches \char`\"{}special\char`\"{} from a technical perspective. The branch types are categorized by how we use them. They are of course plain old Git branches.
+
+In general, if you want to contribute by delevoping a {\itshape new feature}, you should use a {\bfseries feature branch}. If you have spotted a bug and have a patch for it, you should rely on a {\bfseries hotfix branch}.
+
+The semantics behind these branches are described below.
+
+\subsubsection*{Feature Branches}
+
+
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*2{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}\PBS\raggedleft {\bf Rule }&{\bf Description  }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}\PBS\raggedleft {\bf Rule }&{\bf Description  }\\\cline{1-2}
+\endhead
+\PBS\raggedleft May branch from\+: &{\ttfamily develop} \\\cline{1-2}
+\PBS\raggedleft Must merge back into\+: &{\ttfamily develop} \\\cline{1-2}
+\PBS\raggedleft Naming convention\+: &anything except {\ttfamily master}, {\ttfamily develop}, {\ttfamily release-\/$\ast$}, or {\ttfamily hotfix-\/$\ast$} \\\cline{1-2}
+\end{longtabu}
+Feature branches (or sometimes called topic branches) are used to develop new features for the upcoming or a distant future release. When starting development of a feature, the target release in which this feature will be incorporated may well be unknown at that point (an issue marked as a development note might result in such a branch). The essence of a feature branch is that it exists as long as the feature is in development, but will eventually be merged back into develop (to definitely add the new feature to the upcoming release) or discarded (in case of a disappointing experiment).
+
+Feature branches typically exist in developer repos only, not in {\ttfamily origin}, although we do not necessarily strictly enforce this.
+
+\paragraph*{Creating a feature branch}
+
+When starting work on a new feature, branch off from the {\ttfamily develop} branch.
+
+
+\begin{DoxyCode}
+1 $ git checkout -b myfeature develop
+2 Switched to a new branch "myfeature"
+\end{DoxyCode}
+
+
+\paragraph*{Incorporating a finished feature on {\ttfamily develop}}
+
+It is a good practice to issue a {\bfseries Pull Request} to incorporate a feature branch into develop, and ask at least for one code review.
+
+Finished features may be anyhow merged into the develop branch definitely add them to the upcoming release, provided that extensive tests have been carried\+:
+
+
+\begin{DoxyCode}
+1 $ git checkout develop
+2 Switched to branch 'develop'
+3 
+4 $ git merge --no-ff myfeature
+5 Updating ea1b82a..05e9557
+6 (Summary of changes)
+7 
+8 $ git branch -d myfeature
+9 Deleted branch myfeature (was 05e9557).
+10 
+11 $ git push origin develop
+\end{DoxyCode}
+
+
+In case you want to delete the remote branch, you can additionally run\+:
+
+
+\begin{DoxyCode}
+1 git push origin --delete myfeature
+\end{DoxyCode}
+
+
+The {\ttfamily -\/-\/no-\/ff} flag causes the merge to always create a new commit object, even if the merge could be performed with a fast-\/forward. This avoids losing information about the historical existence of a feature branch and groups together all commits that together added the feature. Compare\+:
+
+
+
+In the latter case, it is impossible to see from Git history which of the commit objects together have implemented a feature (you would have to manually read all the log messages). Reverting a whole feature (i.\+e. a group of commits), is a true headache in the latter situation, whereas it is easily done if the {\ttfamily -\/-\/no-\/ff} flag was used. Yes, it will create a few more (empty) commit objects, but the gain is much bigger that that cost.
+
+Merging into {\ttfamily develop} is sometimes referred to as \char`\"{}merge window\char`\"{}. Once a new release branch is created (see below), new features are automatically directed towards the next release.
+
+Once a feature branch is closed, the contributor is required to create a short notice on the project website, Please, see section {\itshape Short Notes on the Project Website} below.
+
+\subsubsection*{Release Branches}
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*2{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}\PBS\raggedleft {\bf Rule }&{\bf Description  }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}\PBS\raggedleft {\bf Rule }&{\bf Description  }\\\cline{1-2}
+\endhead
+\PBS\raggedleft May branch from\+: &{\ttfamily develop} \\\cline{1-2}
+\PBS\raggedleft Must merge back into\+: &{\ttfamily develop} and {\ttfamily master} \\\cline{1-2}
+\PBS\raggedleft Naming convention\+: &{\ttfamily release-\/$\ast$} \\\cline{1-2}
+\end{longtabu}
+Release branches support preparation of a new production release.\+ \+They allow for last-\/minute dotting of i\textquotesingle{}s and crossing t\textquotesingle{}s. Furthermore, they allow for minor bug fixes and preparing meta-\/data for a release (version number, build dates, etc.). By doing all of this work on a release branch, the {\ttfamily develop} branch is cleared to receive features for the next big release.
+
+The key moment to branch off a new release branch from {\ttfamily develop} is when {\ttfamily develop} (almost) reflects the desired state of the new release.\+ \+At least all features that are targeted for the release-\/to-\/be-\/built must be merged in to {\ttfamily develop} at this point in time. All features targeted at future releases may not\+: they must wait until after the release branch is branched off.
+
+It is exactly at the start of a release branch that the upcoming release gets assigned a version number, not any earlier. Up until that moment, the {\ttfamily develop} branch reflected changes for the \char`\"{}next release\char`\"{}, but it is unclear whether that \char`\"{}next release\char`\"{} will eventually become 0.\+3 or 1.\+0, until the release branch is started. That decision is made on the start of the release branch and is carried out by the project\textquotesingle{}s rules on version number bumping.
+
+\paragraph*{Creating a release branch }
+
+Release branches are created from the {\ttfamily develop} branch. For example, say version 1.\+1.\+5 is the current production release and we have a big release coming up. The state of develop is ready for the \char`\"{}next release\char`\"{}. So we branch off and give the release branch a name reflecting the new version number\+:
+
+
+\begin{DoxyCode}
+1 $ git checkout -b release-1.2.0 develop
+2 Switched to a new branch "release-1.2.0"
+3 
+4 $ ./bump-version.sh
+5 Files modified successfully, version bumped to 1.2.0
+6 
+7 $ git commit -s -a -m "Bumped version number to 1.2.0"
+8 [release-1.2.0 74d9424] Bumped version number to 1.2.0
+9 1 files changed, 1 insertions(+), 1 deletions(-)
+\end{DoxyCode}
+
+
+After creating a new branch and switching to it, we bump the version number. Here, {\ttfamily bump-\/version.\+sh} is a commodity shell script, which is not released in this sample repo (if you want to use it, you should implement it according to the versioning scheme that you adopt), that changes the relevant information in the source tree to reflect the new version.
+
+This newly-\/created branch may exist there for a while, until the release may be rolled out definitely. During that time, bug fixes may be applied in this branch (rather than on the {\ttfamily develop} branch). Adding large new features here is {\bfseries strictly prohibited}. They must be merged into {\ttfamily develop}, and therefore, wait for the next big release.
+
+\paragraph*{Finishing a release branch }
+
+When the state of the release branch is ready to become a real release, some actions need to be carried out.
+
+First, the release branch must be merged into {\ttfamily master}. This action can be only done by issuing a Pull Request, and asking for two different code reviews which must positively pass. Also, all automatic tests (if you are using some sort of continuous integration) must pass.
+
+Once the Pull Request is merged (again creating a no-\/fast-\/forward commit), the changes made on the release branch need to be merged back into {\ttfamily develop}, so that future releases also contain these bug fixes.
+
+We then have to create a tag to identify the new release in {\ttfamily master}. By definition, all tags must be signed. This should be done by using git’s integration with P\+GP, so a key to identify the signer must be publicly available. At least, for easiness of retrieval, the public key of the person creating the tag should be published here\+:
+
+
+\begin{DoxyItemize}
+\item \href{http://pgp.mit.edu/}{\tt http\+://pgp.\+mit.\+edu/}\href{http://pgp.mit.edu/}{\tt http\+://pgp.\+mit.\+edu/}
+\item \href{http://keyserver.pgp.com/}{\tt http\+://keyserver.\+pgp.\+com/}
+\end{DoxyItemize}
+
+To set up git for using your private key to sign tags\+:
+
+
+\begin{DoxyCode}
+1 $ git config --global user.signingkey HASH
+\end{DoxyCode}
+
+
+This allows to use {\ttfamily -\/s} as a shortcut to select the key for signing. If you don\textquotesingle{}t want for some reason to globally set your key for signing, in the tag creation command you must replace {\ttfamily -\/s} with {\ttfamily -\/u $<$key$>$}.
+
+The git steps to create the release from the {\ttfamily master branch} after that the Pull Request have been merged are\+:
+
+
+\begin{DoxyCode}
+1 $ git checkout master
+2 Switched to branch 'master'
+3 
+4 $ git pull
+5 (Summary of changes)
+6 
+7 $ git tag -s -a 1.2.0
+\end{DoxyCode}
+
+
+Note that here you must manually specify a version number as the tag name, coherent with the version number which you are releasing.
+
+To publish the tag on origin, the following command can be used\+:
+
+
+\begin{DoxyCode}
+1 $ git push --follow-tags
+\end{DoxyCode}
+
+
+It pushes only \char`\"{}sane\char`\"{} tags, namely tags that are both\+:
+
+
+\begin{DoxyItemize}
+\item Annotated
+\item Reachable (an ancestor) from the pushed commits
+\end{DoxyItemize}
+
+This is sane because only annotated tags should be pushed on the remote, keeping lightweight tags for local development only, and doesnt push tags on unrelated branches. {\ttfamily git push -\/-\/tags} should be avoided at all because it pushes all tags, not only \char`\"{}sane\char`\"{} ones.
+
+The release is now done, and tagged for future reference. To keep the changes made in the release branch, we need to merge those back into {\ttfamily develop}, though. In git\+:
+
+
+\begin{DoxyCode}
+1 $ git checkout develop
+2 Switched to branch 'develop'
+3 
+4 $ git merge --no-ff release-1.2.0
+5 Merge made by recursive.
+6 (Summary of changes)
+\end{DoxyCode}
+
+
+This step may well lead to a merge conflict (probably even, since we have changed the version number). If so, fix it and commit.
+
+Now we are really done and the release branch may be removed, since we don’t need it anymore\+:
+
+
+\begin{DoxyCode}
+1 $ git branch -d release-1.2
+2 Deleted branch release-1.2 (was ff452fe).
+\end{DoxyCode}
+
+
+\subsubsection*{Hotfix Branches}
+
+
+
+\tabulinesep=1mm
+\begin{longtabu} spread 0pt [c]{*2{|X[-1]}|}
+\hline
+\rowcolor{\tableheadbgcolor}\PBS\raggedleft {\bf Rule }&{\bf Description  }\\\cline{1-2}
+\endfirsthead
+\hline
+\endfoot
+\hline
+\rowcolor{\tableheadbgcolor}\PBS\raggedleft {\bf Rule }&{\bf Description  }\\\cline{1-2}
+\endhead
+\PBS\raggedleft May branch from\+: &{\ttfamily master} \\\cline{1-2}
+\PBS\raggedleft Must merge back into\+: &{\ttfamily develop} and {\ttfamily master} \\\cline{1-2}
+\PBS\raggedleft Naming convention\+: &{\ttfamily hotfix-\/$\ast$} \\\cline{1-2}
+\end{longtabu}
+
+
+Hotfix branches are very much like release branches in that they are also meant to prepare for a new production release, albeit unplanned. They arise from the necessity to act immediately upon an undesired state of a live production version. When a critical bug in a production version must be resolved immediately, a hotfix branch may be branched off from the corresponding tag on the {\ttfamily master} branch that marks the production version.
+
+The essence is that work of team members (on the {\ttfamily develop} branch) can continue, while another person is preparing a quick production fix.
+
+\paragraph*{Creating the hotfix branch }
+
+Hotfix branches are created from the {\ttfamily master} branch. For example, say version 1.\+2.\+1 is the current production release running live and causing troubles due to a severe bug. But changes on {\ttfamily develop} are yet unstable.\+ \+We may then branch off a hotfix branch and start fixing the problem\+:
+
+
+\begin{DoxyCode}
+1 $ git checkout -b hotfix-1.2.1 master
+2 Switched to a new branch "hotfix-1.2.1"
+3 
+4 $ ./bump-version.sh
+5 Files modified successfully, version bumped to 1.2.1.
+6 
+7 $ git commit -s -a -m "Bumped version number to 1.2.1"
+8 [hotfix-1.2.1 41e61bb] Bumped version number to 1.2.1
+9 1 files changed, 1 insertions(+), 1 deletions(-)
+\end{DoxyCode}
+
+
+Don\textquotesingle{}t forget to bump the version number after branching off! Again, the {\ttfamily bump-\/version.\+sh} script will automatically determine the new version number starting from the branch name.
+
+Then, fix the bug and commit the fix in one or more separate commits.
+
+
+\begin{DoxyCode}
+1 $ git commit
+2 [hotfix-1.2.1-2 abbe5d6] Fixed severe production problem
+3 5 files changed, 32 insertions(+), 17 deletions(-)
+\end{DoxyCode}
+
+
+\paragraph*{Finishing a hotfix branch}
+
+When finished, the bugfix needs to be merged back into {\ttfamily master}, but also needs to be merged back into {\ttfamily develop}, in order to safeguard that the bugfix is included in the next release as well. This is completely similar to how release branches are finished.
+
+The one exception to the rule here is that, when a release branch currently exists, the hotfix changes need to be merged into that release branch, instead of {\ttfamily develop}.
+
+Back-\/merging the bugfix into the release branch will eventually result in the bugfix being merged into {\ttfamily develop} too, when the release branch is finished.
+
+(If work in develop immediately requires this bugfix and cannot wait for the release branch to be finished, you may safely merge the bugfix into {\ttfamily develop} now already as well.)
+
+Finally, remove the temporary branch\+:
+
+
+\begin{DoxyCode}
+1 $ git branch -d hotfix-1.2.1
+2 Deleted branch hotfix-1.2.1 (was abbe5d6).
+\end{DoxyCode}
+
+
+\subsection*{Commits and Commit Messages}
+
+A commit should be a self-\/contained update to the code tree. Despite bug fixes that could be introduced later in the development, a commit should be never considered as \char`\"{}\+I’m saving my work now, I’ll continue later\char`\"{}, especially if the commit is pushed to a remote repository.
+
+On the other hand, a commit should not contain multiple changes to the code base. If, during development, I have to change something in two different modules, and the changes are unrelated, then the changes should be placed in two different commits. That is\+: make separate commits for logically separate changes.
+
+Making good commits is a form of art. A good way to decide whether a commit is self-\/contained, developers should answer themselves the question\+: \char`\"{}will I be able to cherry pick this commit in the future, shall I need it?\char`\"{}. If the answer is yes, then most likely it is a good commit.
+
+Commit messages should be meaningful. A one-\/line commit message like \char`\"{}\+I’m developing foo\char`\"{} will not allow other developers to understand what that commit is for. A minimal commit message would be of the format\+:
+
+
+\begin{DoxyCode}
+1 Short log
+2 
+3 (Optional pointers to external resources, such as defect tracking)
+4 
+5 The intent of your change.
+6 
+7 (Optional, if it's not clear from above) how your change resolves the
+8 issues in the first part.
+9 
+10 Tag line(s) at the end.   
+\end{DoxyCode}
+
+
+This is an example of a good commit message\+:
+
+
+\begin{DoxyCode}
+1 foobar: Adjusted the foo setting in bar
+2 
+3 When using foobar on systems with less than a gigabyte of RAM common
+4 usage patterns often result in an Out-of-memory condition causing
+5 slowdowns and unexpected application termination.
+6 
+7 Low-memory systems should continue to function without running into
+8 memory-starvation conditions with minimal cost to systems with more
+9 available memory.  High-memory systems will be less able to use the
+10 full extent of the system, a dynamically tunable option may be best,
+11 long-term.
+12 
+13 The foo setting in bar was decreased from X to X-50% in order to
+14 ensure we don't exhaust all system memory with foobar threads.
+15 
+16 Signed-off-by: Joe Developer <joe.developer@example.com>
+\end{DoxyCode}
+
+
+Several things should be noted here. The minimal commit message is good for new code development and simple changes. An empty line must always come after it, otherwise post processing software might not be able to distinguish it from the rest of the commit text.
+
+The single short log message indicates what needed to be changed. It should begin with an indicator as to the primary item changed by this work, followed by a short summary of the change. In the above case we\textquotesingle{}re indicating that we\textquotesingle{}ve changed the \char`\"{}foobar\char`\"{} item, by \char`\"{}adjusting the foo setting in bar\char`\"{}.
+
+The single short log message is analogous to the git \char`\"{}commit summary\char`\"{}. While no maximum line length is specified by this policy, it is suggested that it remains under 50 characters wherever possible. Think of it as the subject of an email\+: you should never write too much text in it, otherwise receivers will not understand easily what the email is about.
+
+Optionally, you may include pointers to defects this change corrects. Unless the defect format is specified by the component you are modifying, it is suggested that you use a full U\+RL to specify the reference to the defect information. Generally, these pointers will precede any long description, but as an optional item it may be after the long description. This could be a good way, for example, to refer to open issues in a bug tracker. You must then have a full description of the change. Specifying the intent of your change and if necessary how the change resolves the issue.
+
+Finally, one or more tag lines should exist. Each developer responsible for working on the patch is responsible for adding a {\ttfamily Signed-\/off-\/by\+:} tag line. This tag line should be added by people writing the patch, and additional tag lines should be added by people, for example, merging the patch into different branches. This allows to easily track the updates to the code base, and determine who did what.
+
+It is not acceptable to have an empty or non-\/existent header, or just a single line message. The summary and description is required for all changes.
+
+The commit messages should be manually indented. Usually, each line of the message, should not be longer than 78 characters. Note that in order to do this easily, is always better to avoid using the {\ttfamily -\/m} switch when committing\+: in fact, simply issuing\+:
+
+
+\begin{DoxyCode}
+1 $ git commit
+\end{DoxyCode}
+
+
+will fire up the text editor specified in the {\ttfamily E\+D\+I\+T\+OR} environment variable (you can set it to your preferred editor), so that you can freely write your commit message respecting the adopted layout. Note that if you set your favorite editor to vim, you can add the following lines to $\sim$/.vimrc\+:
+
+
+\begin{DoxyCode}
+1 filetype plugin indent on
+2 au FileType gitcommit set tw=72
+\end{DoxyCode}
+
+
+which automatically wraps the text to the specified 72 characters for git commit messages. To check whether vim is correctly identifying the commit message as gitcommit, the following command can be used within vi\+:
+
+
+\begin{DoxyCode}
+1 :set filetype?
+\end{DoxyCode}
+
+
+or to save a few keystrokes\+:
+
+
+\begin{DoxyCode}
+1 :se ft?
+\end{DoxyCode}
+
+
+If, for any reason, you have pushed commits with non-\/meaningful descriptions (due to hurry, pressure, {\ttfamily git fire}, etc.), these should never end up in the {\ttfamily master} branch. Here, interactively rebasing you local branch (and issuing a force push if possible) is a good practice. 

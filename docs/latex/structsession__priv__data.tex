@@ -1,0 +1,40 @@
+\hypertarget{structsession__priv__data}{}\section{session\+\_\+priv\+\_\+data Struct Reference}
+\label{structsession__priv__data}\index{session\+\_\+priv\+\_\+data@{session\+\_\+priv\+\_\+data}}
+
+
+This structure is linked to the original file through the field {\bfseries private\+\_\+data} and the main purpose is to keep the pointer to the session file.  
+
+
+
+
+{\ttfamily \#include $<$session\+\_\+module.\+h$>$}
+
+\subsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+struct rw\+\_\+semaphore $\ast$ \hyperlink{structsession__priv__data_a0eba6b6e0bbe3d55110a724c3c08d1c2}{rw\+\_\+sem}
+\item 
+struct file $\ast$ \hyperlink{structsession__priv__data_a51a230f12c70d8408e3a829e2d958156}{session\+\_\+filp}
+\item 
+char $\ast$ \hyperlink{structsession__priv__data_a209d631af37ada588f9c8172d078593f}{abs\+\_\+path}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+This structure is linked to the original file through the field {\bfseries private\+\_\+data} and the main purpose is to keep the pointer to the session file. 
+
+\subsection{Field Documentation}
+\index{session\+\_\+priv\+\_\+data@{session\+\_\+priv\+\_\+data}!abs\+\_\+path@{abs\+\_\+path}}
+\index{abs\+\_\+path@{abs\+\_\+path}!session\+\_\+priv\+\_\+data@{session\+\_\+priv\+\_\+data}}
+\subsubsection[{\texorpdfstring{abs\+\_\+path}{abs_path}}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ abs\+\_\+path}\hypertarget{structsession__priv__data_a209d631af37ada588f9c8172d078593f}{}\label{structsession__priv__data_a209d631af37ada588f9c8172d078593f}
+This is a redundance, it avoid the use of the d\+\_\+path \index{session\+\_\+priv\+\_\+data@{session\+\_\+priv\+\_\+data}!rw\+\_\+sem@{rw\+\_\+sem}}
+\index{rw\+\_\+sem@{rw\+\_\+sem}!session\+\_\+priv\+\_\+data@{session\+\_\+priv\+\_\+data}}
+\subsubsection[{\texorpdfstring{rw\+\_\+sem}{rw_sem}}]{\setlength{\rightskip}{0pt plus 5cm}struct rw\+\_\+semaphore$\ast$ rw\+\_\+sem}\hypertarget{structsession__priv__data_a0eba6b6e0bbe3d55110a724c3c08d1c2}{}\label{structsession__priv__data_a0eba6b6e0bbe3d55110a724c3c08d1c2}
+This is a redundance, is a copy of the one present into the struct \hyperlink{structsession__file__node}{session\+\_\+file\+\_\+node}, prevents a search into the rb\+\_\+tree \index{session\+\_\+priv\+\_\+data@{session\+\_\+priv\+\_\+data}!session\+\_\+filp@{session\+\_\+filp}}
+\index{session\+\_\+filp@{session\+\_\+filp}!session\+\_\+priv\+\_\+data@{session\+\_\+priv\+\_\+data}}
+\subsubsection[{\texorpdfstring{session\+\_\+filp}{session_filp}}]{\setlength{\rightskip}{0pt plus 5cm}struct file$\ast$ session\+\_\+filp}\hypertarget{structsession__priv__data_a51a230f12c70d8408e3a829e2d958156}{}\label{structsession__priv__data_a51a230f12c70d8408e3a829e2d958156}
+This is the real sense of this structure, it\textquotesingle{}s a pointer pointing to the session\+\_\+file, the incarnation of the original one and the core of the sessions 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+/home/osboxes/\+Documenti/\+A\+O\+S\+V/aosv1819-\/federicoalfano/\hyperlink{session__module_8h}{session\+\_\+module.\+h}\end{DoxyCompactItemize}

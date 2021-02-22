@@ -1,0 +1,261 @@
+\section*{Final Project Report}
+
+{\bfseries Student Full Name\+:} Federico Alfano
+
+{\bfseries Student ID\+:} 1262220
+
+\subsection*{Introduction}
+
+It\textquotesingle{}s a subsystem that makes the user able to access a file using sessions. In this way every modification is not visible until the session is close. Many processes can access concurrently a given file. The system provides also some statistical information into the /sys/kernel/session-\/module directory where the user can\+:
+\begin{DoxyItemize}
+\item See the number of total open sessions
+\item See the number of sessions per-\/process and per-\/file
+\item See and change the path where the user can open sessions The idea is to create a new file, copy the old file into it and then redirect all the V\+FS operations on the session file overwriting the file operations. At the close, the session file is renamed as the old one and the last is unlinked.
+\end{DoxyItemize}
+
+\subsection*{User Space Library}
+
+The userspace library is a simple interface that provides the user a set of operations to interact with the module. In particular the operations needed are\+:
+\begin{DoxyItemize}
+\item session\+\_\+init\+: it starts the session and provides a session\+\_\+id that is the file descriptor of the module
+\item session\+\_\+open\+: it tells the library to open a session on a given file, it needs as parameters the session\+\_\+id and the file descriptor onto we want to open a session and returns 0 if no error and an error code if it fails.
+\item session\+\_\+close\+: it tells the library to close a session on a given file, it needs as parameters the session\+\_\+id and the file descriptor onto we want to close a session.
+\item session\+\_\+exit\+: it ends the session closing the module All the operations are a call to the facilities provided by the module 
+\begin{DoxyCode}
+1 int session\_init()
+2 \{
+3     return open(CHAR\_DEVICE, O\_RDWR);
+4 \}
+5 
+6 int session\_open(int session\_id, int fd)
+7 \{  
+8     return ioctl(session\_id, SESSION\_OPEN, &fd);  
+9 \}
+10 
+11 int session\_close(int session\_id, int fd)
+12 \{   
+13     return ioctl(session\_id, SESSION\_CLOSE, &fd); 
+14 \}
+15 
+16 int session\_exit(int session\_id)
+17 \{   
+18         return close(session\_id);
+19 \}
+\end{DoxyCode}
+
+\end{DoxyItemize}
+
+\subsection*{Kernel-\/\+Level Data Structures}
+
+The subsystem has two global rbtrees that are represented respectively by\+:
+\begin{DoxyItemize}
+\item struct \hyperlink{structsession__proc__node}{session\+\_\+proc\+\_\+node}
+\item struct \hyperlink{structsession__file__node}{session\+\_\+file\+\_\+node} They contain the counter for the per-\/process sessions and the per-\/file sessions. The system relies also on two global variables\+:
+\item The base\+\_\+path
+\item session\+\_\+counter The former is used to store the current base path where the sessions can live, the second keeps track of the total number of sessions. All data can be read into the /sys directory and the path can also be modified from the user.
+\end{DoxyItemize}
+
+\subsection*{Kernel-\/\+Level Subsystem Implementation}
+
+\subsubsection*{Initialization}
+
+The initialization allocates dynamically a M\+A\+J\+OR and a single M\+I\+N\+OR for the char device and then initializes that and set the global variable {\itshape my\+\_\+cdev} that is a struct defined into the header, containing the char device and a kobject. The next step is the build of the sysfs tree that has the following structure\+:
+
+
+
+the choice to use a single file for the file counters and to use multiple files for processes is just for a readability. The last step is to set the P\+WD as default base path
+
+{\ttfamily get\+\_\+fs\+\_\+pwd(current-\/$>$fs ,\&base\+\_\+path);}
+
+\subsubsection*{Module operations}
+
+The device initialization wants file\+\_\+operations structure in order to control the behaviour of the module, the following implementations only needs three of them\+: -\/open -\/release -\/ioctl\+\_\+unlocked The third one is the essence of the module, so deserves a dedicated paragraph. \subsubsection*{module\+\_\+open}
+
+It\textquotesingle{}s called when the user wants to start to work with sessions, so the first thing to do is to check if a session is already open and return an E\+E\+X\+I\+ST error if yes 
+\begin{DoxyCode}
+1 if((node = rb\_search(&root, pid, &tree\_rwlock)))
+2         return -EEXIST;
+\end{DoxyCode}
+
+
+after that, it will create a node into the rbtree containing the processes\+: 
+\begin{DoxyCode}
+1 node = kmalloc(sizeof(struct session\_proc\_node), GFP\_KERNEL);
+2     scnprintf(node->key, PROC\_NAME\_LENGTH, "%d", current->pid);
+3     atomic\_set(&node->session\_counter, 0);
+4     rb\_insert(&root, node, &tree\_rwlock);
+\end{DoxyCode}
+ The insertion is sensitive to race conditions, so it keeps a rwlock that is managed into the helper function in {\itshape file\+\_\+utils.\+c}. And finally it creates a file into $\ast$/sys/kernel/session\+\_\+module/proc$\ast$ directory with the number of open sessions.
+
+
+\begin{DoxyCode}
+1 proc\_counter\_attr = get\_attribute(node->key, 0444, proc\_counter\_show, NULL);
+2     node->attr = (const struct attribute*) &proc\_counter\_attr->attr;
+3     sysfs\_create\_file(proc\_kobj, &proc\_counter\_attr->attr);
+\end{DoxyCode}
+
+
+\subsubsection*{module\+\_\+release}
+
+Essentially the release method is a check to verify if the user has closed the module in the right way, so it checks if the node related to the process is still present into the rbtree and after removing that it raises a S\+I\+G\+P\+I\+PE 
+\begin{DoxyCode}
+1 if(current\_node!=NULL)
+2 \{
+3     clear\_proc\_node();                  
+4     send\_sig(SIGPIPE, current, 0);
+5 \}
+\end{DoxyCode}
+
+
+\subsubsection*{module\+\_\+ioctl}
+
+The function is in charge to manage all the operations to the file, let\textquotesingle{}s see them in detail\+:
+
+\paragraph*{O\+P\+E\+N\+\_\+\+S\+E\+S\+S\+I\+ON}
+
+This is the operation called at the session opening, after some check on the validity of the file and of permissions it performs the following operations\+:
+
+
+\begin{DoxyItemize}
+\item Creates a temporary file with the same content and flags of the original one
+\end{DoxyItemize}
+
+
+\begin{DoxyCode}
+1 session\_filp = filp\_open(cur\_addr, O\_TMPFILE | O\_RDWR  , 0644);
+2 down\_read(priv\_data->rw\_sem);
+3 err = vfs\_copy\_file\_range(original\_filp, 0, session\_filp, 0, i\_size\_read(original\_filp->f\_inode), 0);
+4 up\_read(priv\_data->rw\_sem);
+5 session\_filp->f\_flags = original\_filp->f\_flags;
+\end{DoxyCode}
+ this file will be pointed by the {\itshape private\+\_\+data} field into the original file that is a special structure defined in the header which contains the session file pointer, the absolute path and a semaphore that is used to protect sessions during the close.
+\begin{DoxyItemize}
+\item Creates a node needed to keep track of opened file if not exists, else it increments atomically the counter\+:
+\end{DoxyItemize}
+
+
+\begin{DoxyCode}
+1 tmp\_key = d\_path(&original\_filp->f\_path, tmp\_addr, MAX\_PATH\_SIZE);
+2             f\_node = rb\_search\_file(&root\_files, tmp\_key, &tree\_rwlock\_files);
+3             if(f\_node== NULL)
+4                 \{
+5 
+6                 f\_node = kmalloc(sizeof(struct session\_file\_node), GFP\_KERNEL);
+7 
+8                 atomic\_set(&f\_node->counter,1);
+9                 strcpy(f\_node->key, tmp\_key);
+10                 rb\_insert\_file(&root\_files, f\_node, &tree\_rwlock\_files);
+11             \}
+12             else
+13             \{
+14                 atomic\_inc(&f\_node->counter);
+15 
+16             \}
+\end{DoxyCode}
+
+
+
+\begin{DoxyItemize}
+\item Creates a {\bfseries struct file\+\_\+operations} based on the one present in the {\itshape original\+\_\+filp} and replaces the needed operations with the new ones
+\end{DoxyItemize}
+
+
+\begin{DoxyCode}
+1 fops\_replacement = kmalloc(sizeof(struct file\_operations), GFP\_KERNEL);
+2 
+3             *fops\_replacement = (struct file\_operations) *original\_filp->f\_op;
+4             fops\_replacement->write = session\_write;
+5             fops\_replacement->read = session\_read;
+6             fops\_replacement->llseek = session\_llseek;
+7             fops\_replacement->release = session\_release;  
+8             replace\_fops(original\_filp, fops\_replacement);
+\end{DoxyCode}
+
+
+And finally it increments the global counter and the counter of the sessions opened by the process
+
+\paragraph*{C\+L\+O\+S\+E\+\_\+\+S\+E\+S\+S\+I\+ON}
+
+The close\+\_\+session is responsible of closing the file and to copy the content of the session into the original file, all is done thanks to the function {\itshape delete} that after some operations makes its job\+: 
+\begin{DoxyCode}
+1 down\_write(priv\_data->rw\_sem);
+2 vfs\_truncate(&filp->f\_path, 0);
+3 err = vfs\_copy\_file\_range(session\_file, 0, filp, 0, file\_size, 0); 
+4 up\_write(priv\_data->rw\_sem);
+\end{DoxyCode}
+
+
+after that it restores the default file operations 
+\begin{DoxyCode}
+1 replace\_fops(filp, inodep->i\_fop);
+\end{DoxyCode}
+
+
+The delete returns an E\+P\+I\+PE error if the given file is removed from the filesystem, checking at the variable {\itshape i\+\_\+nlink} 
+\begin{DoxyCode}
+1 if(inodep->i\_nlink==0)
+2 \{
+3     send\_sig(SIGPIPE, current, 1);
+4     up\_write(priv\_data->rw\_sem);
+5     printk(KERN\_ERR "Sigpipe is sent");
+6     return -EPIPE;
+7 \}
+\end{DoxyCode}
+ \paragraph*{E\+X\+I\+T\+\_\+\+S\+E\+S\+S\+I\+ON}
+
+The exit session represents the wish of closing the sessions, it just clear the processes tree, it\textquotesingle{}s not really necessary just because all cleanup operations are made inside the release function related to the file, but maybe it can represent a
+
+\subsection*{Testcase and Benchmark}
+
+\subsubsection*{Correctness}
+
+The whole developement had a test driven approach, all tests are contained into the tests/unit\+\_\+tests folder, they were performed throught the {\itshape check}, a unit test framework. In particular the file test.\+c contains the main functions tested during the development, looking the code it\textquotesingle{}s easy to understand that the tests were about\+:
+\begin{DoxyItemize}
+\item Initialization
+\item Session operations on the file
+\item Main errors
+\item Sysfs correctness
+\item Some basic tests on correctness with concurrency
+\item Test of the correct raise of S\+I\+G\+P\+I\+PE
+\end{DoxyItemize}
+
+
+\begin{DoxyCode}
+1 Suite *s;
+2     TCase *tc\_core;
+3 
+4     s = suite\_create("Core functionalities Tests");
+5     tc\_core = tcase\_create("Core");
+6 
+7     tcase\_add\_test(tc\_core, test\_session\_init);
+8     tcase\_add\_test(tc\_core, test\_file\_op);
+9     tcase\_add\_test(tc\_core, test\_errors);
+10     tcase\_add\_test(tc\_core, test\_sysfs);
+11     tcase\_add\_test(tc\_core, test\_fork\_processes);
+12     tcase\_add\_test\_raise\_signal(tc\_core, test\_signal, SIGPIPE);
+13     suite\_add\_tcase(s, tc\_core);
+14     return s;
+\end{DoxyCode}
+ \subsubsection*{Performance}
+
+The file perf\+\_\+test compiled into the make with the $\ast$-\/pg$\ast$ option tries many times a write operation with and without sessions\+: 
+\begin{DoxyCode}
+1 if(argc<3)
+2     printf("Usage: perf\_test.c file1 file2");
+3 int i;
+4 
+5 for(i=0; i<TRIES;i++)
+6     write\_with\_session(argv[1]);
+7 for(i=0; i<TRIES;i++)
+8     write\_without\_session(argv[2]);
+9 return 0;
+\end{DoxyCode}
+
+
+The tests are performed initially with empty file and they shows no significant drop of performances with a relative low number of try. When tries are increased with the O\+\_\+\+A\+P\+P\+E\+ND mode (more than 10k) the write with session takes more than the 99\% of the time. The analysis is made with {\bfseries gproof} with the following command into the terminal after the execution\+: 
+\begin{DoxyCode}
+1 gprof perf\_test gmon.out > little\_file\_analysis
+\end{DoxyCode}
+ so the file {\itshape little\+\_\+file\+\_\+analysis} contains the report of the previous test.
+
+the second test is performed with a medium file (2\+MB instead of 100byte) and 1k tries and with 10k tries. We can see that the drop of performace always belongs to the vfs\+\_\+copy\+\_\+file\+\_\+range call into the kernel as we expected. All analysis are provided into the test folder. 

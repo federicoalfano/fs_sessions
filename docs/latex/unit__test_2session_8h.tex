@@ -1,0 +1,115 @@
+\hypertarget{unit__test_2session_8h}{}\section{/home/osboxes/\+Documenti/\+A\+O\+S\+V/aosv1819-\/federicoalfano/tests/unit\+\_\+test/session.h File Reference}
+\label{unit__test_2session_8h}\index{/home/osboxes/\+Documenti/\+A\+O\+S\+V/aosv1819-\/federicoalfano/tests/unit\+\_\+test/session.\+h@{/home/osboxes/\+Documenti/\+A\+O\+S\+V/aosv1819-\/federicoalfano/tests/unit\+\_\+test/session.\+h}}
+
+
+The header of the userspace library that allows the user to start a session based file access.  
+
+
+{\ttfamily \#include $<$stdio.\+h$>$}\\*
+{\ttfamily \#include $<$stdlib.\+h$>$}\\*
+{\ttfamily \#include $<$string.\+h$>$}\\*
+{\ttfamily \#include $<$fcntl.\+h$>$}\\*
+{\ttfamily \#include $<$unistd.\+h$>$}\\*
+{\ttfamily \#include $<$sys/ioctl.\+h$>$}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{unit__test_2session_8h_a18e9bc4290ef62eb372782a0f83747b6}{session\+\_\+init} (void)
+\begin{DoxyCompactList}\small\item\em session\+\_\+init express the wish to initialize a session \end{DoxyCompactList}\item 
+int \hyperlink{unit__test_2session_8h_a9fc700c721d8821fea3e38dae1a17065}{session\+\_\+open} (int, int)
+\begin{DoxyCompactList}\small\item\em opens a session on a specific file descriptor \end{DoxyCompactList}\item 
+int \hyperlink{unit__test_2session_8h_a0466f13cb7d82ea1a99fec19cc4c018c}{session\+\_\+close} (int, int)
+\begin{DoxyCompactList}\small\item\em closes a session on a specific file descriptor \end{DoxyCompactList}\item 
+int \hyperlink{unit__test_2session_8h_adb7b504193503641e7be410e31dad1d5}{session\+\_\+exit} (int)
+\begin{DoxyCompactList}\small\item\em session\+\_\+exit expresses the whish of terminating the session \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+The header of the userspace library that allows the user to start a session based file access. 
+
+\begin{DoxyAuthor}{Author}
+Federico Alfano 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+2 May, 2020 
+\end{DoxyDate}
+
+
+\subsection{Function Documentation}
+\index{unit\+\_\+test/session.\+h@{unit\+\_\+test/session.\+h}!session\+\_\+close@{session\+\_\+close}}
+\index{session\+\_\+close@{session\+\_\+close}!unit\+\_\+test/session.\+h@{unit\+\_\+test/session.\+h}}
+\subsubsection[{\texorpdfstring{session\+\_\+close(int, int)}{session_close(int, int)}}]{\setlength{\rightskip}{0pt plus 5cm}int session\+\_\+close (
+\begin{DoxyParamCaption}
+\item[{int}]{, }
+\item[{int}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{unit__test_2session_8h_a0466f13cb7d82ea1a99fec19cc4c018c}{}\label{unit__test_2session_8h_a0466f13cb7d82ea1a99fec19cc4c018c}
+
+
+closes a session on a specific file descriptor 
+
+
+\begin{DoxyParams}{Parameters}
+{\em session\+\_\+id} & the id returned by the init \\
+\hline
+{\em fd} & the file descriptor on which the session must be close \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 if everything goes well, otherwise returns an error code 
+\end{DoxyReturn}
+\index{unit\+\_\+test/session.\+h@{unit\+\_\+test/session.\+h}!session\+\_\+exit@{session\+\_\+exit}}
+\index{session\+\_\+exit@{session\+\_\+exit}!unit\+\_\+test/session.\+h@{unit\+\_\+test/session.\+h}}
+\subsubsection[{\texorpdfstring{session\+\_\+exit(int)}{session_exit(int)}}]{\setlength{\rightskip}{0pt plus 5cm}int session\+\_\+exit (
+\begin{DoxyParamCaption}
+\item[{int}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{unit__test_2session_8h_adb7b504193503641e7be410e31dad1d5}{}\label{unit__test_2session_8h_adb7b504193503641e7be410e31dad1d5}
+
+
+session\+\_\+exit expresses the whish of terminating the session 
+
+
+\begin{DoxyParams}{Parameters}
+{\em session\+\_\+id} & the id returned by the init \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 if everything goes well, otherwise returns an error code 
+\end{DoxyReturn}
+\index{unit\+\_\+test/session.\+h@{unit\+\_\+test/session.\+h}!session\+\_\+init@{session\+\_\+init}}
+\index{session\+\_\+init@{session\+\_\+init}!unit\+\_\+test/session.\+h@{unit\+\_\+test/session.\+h}}
+\subsubsection[{\texorpdfstring{session\+\_\+init(void)}{session_init(void)}}]{\setlength{\rightskip}{0pt plus 5cm}int session\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{void}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{unit__test_2session_8h_a18e9bc4290ef62eb372782a0f83747b6}{}\label{unit__test_2session_8h_a18e9bc4290ef62eb372782a0f83747b6}
+
+
+session\+\_\+init express the wish to initialize a session 
+
+\begin{DoxyReturn}{Returns}
+the id representing the session if everything goes well, otherwise returns an error code 
+\end{DoxyReturn}
+\index{unit\+\_\+test/session.\+h@{unit\+\_\+test/session.\+h}!session\+\_\+open@{session\+\_\+open}}
+\index{session\+\_\+open@{session\+\_\+open}!unit\+\_\+test/session.\+h@{unit\+\_\+test/session.\+h}}
+\subsubsection[{\texorpdfstring{session\+\_\+open(int, int)}{session_open(int, int)}}]{\setlength{\rightskip}{0pt plus 5cm}int session\+\_\+open (
+\begin{DoxyParamCaption}
+\item[{int}]{, }
+\item[{int}]{}
+\end{DoxyParamCaption}
+)}\hypertarget{unit__test_2session_8h_a9fc700c721d8821fea3e38dae1a17065}{}\label{unit__test_2session_8h_a9fc700c721d8821fea3e38dae1a17065}
+
+
+opens a session on a specific file descriptor 
+
+
+\begin{DoxyParams}{Parameters}
+{\em session\+\_\+id} & the id returned by the init \\
+\hline
+{\em fd} & the file descriptor on which the session must be open \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 if everything goes well, otherwise returns an error code 
+\end{DoxyReturn}
